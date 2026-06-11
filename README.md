@@ -16,6 +16,13 @@
 - 必須使用 HTTPS。
 - 部署時保留這個資料夾內所有檔案與相對位置。
 - 首頁必須是 `index.html`。
+- 儲存庫名稱建議使用 `museum-field-desk`。
+- 第一次需要在 GitHub Pages 設定中選擇「GitHub Actions」作為來源。
+- 完成後，每次推送 `main` 分支都會自動更新網站。
+
+## 預定網址
+
+`https://keroro1234558.github.io/museum-field-desk/`
 
 ## 驗證項目
 
