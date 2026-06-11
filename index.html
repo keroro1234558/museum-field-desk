@@ -1,0 +1,1308 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f3ea">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="展後分析台">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./icon-180.png">
+  <title>展後分析台</title>
+  <style>
+    :root {
+      --paper: #f7f3ea;
+      --paper-deep: #ebe3d3;
+      --ink: #20201d;
+      --muted: #6f685f;
+      --line: #d6c9b7;
+      --charcoal: #292f2b;
+      --sage: #577064;
+      --brick: #aa4b35;
+      --gold: #b8873a;
+      --blue: #2e6275;
+      --white: #fffaf0;
+      --shadow: 0 16px 45px rgba(55, 45, 31, .12);
+      --radius: 8px;
+      --speed: 180ms;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: ui-serif, "Songti TC", "Noto Serif TC", Georgia, serif;
+      letter-spacing: 0;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        linear-gradient(90deg, rgba(32, 32, 29, .04) 1px, transparent 1px) 0 0 / 48px 48px,
+        linear-gradient(0deg, rgba(32, 32, 29, .035) 1px, transparent 1px) 0 0 / 48px 48px,
+        var(--paper);
+    }
+
+    button,
+    input,
+    textarea,
+    select {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .shell {
+      width: min(1240px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 24px 0 48px;
+    }
+
+    .masthead {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 20px;
+      align-items: end;
+      padding: 18px 0 22px;
+      border-bottom: 2px solid var(--ink);
+    }
+
+    .identity {
+      display: grid;
+      gap: 8px;
+    }
+
+    .kicker {
+      margin: 0;
+      color: var(--brick);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: .76rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2.2rem, 6vw, 5.5rem);
+      line-height: .9;
+      font-weight: 900;
+    }
+
+    .subline {
+      margin: 0;
+      max-width: 780px;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.65;
+    }
+
+    .quick-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .quick-link {
+      display: inline-flex;
+      align-items: center;
+      min-height: 38px;
+      padding: 0 13px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 250, 240, .76);
+      color: var(--ink);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: .76rem;
+      font-weight: 800;
+      text-decoration: none;
+      transition: transform var(--speed), border-color var(--speed), background var(--speed);
+    }
+
+    .quick-link:hover {
+      transform: translateY(-1px);
+      border-color: var(--brick);
+      background: var(--white);
+    }
+
+    .timer {
+      min-width: 220px;
+      padding: 14px;
+      color: var(--white);
+      background: var(--charcoal);
+      border: 1px solid var(--ink);
+      box-shadow: var(--shadow);
+    }
+
+    .timer-time {
+      display: block;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 2.2rem;
+      line-height: 1;
+    }
+
+    .timer-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .timer button,
+    .toolbar button,
+    .copy-btn,
+    .small-btn {
+      min-height: 42px;
+      border: 1px solid currentColor;
+      border-radius: 999px;
+      background: transparent;
+      color: inherit;
+      transition: transform var(--speed), background var(--speed), color var(--speed), border-color var(--speed);
+    }
+
+    .timer button:hover,
+    .toolbar button:hover,
+    .copy-btn:hover,
+    .small-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .timer button:active,
+    .toolbar button:active,
+    .copy-btn:active,
+    .small-btn:active {
+      transform: translateY(0);
+    }
+
+    .progress-wrap {
+      margin-top: 18px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: .78rem;
+      font-weight: 700;
+    }
+
+    .progress {
+      height: 10px;
+      border: 1px solid var(--ink);
+      background: var(--paper-deep);
+    }
+
+    .progress-bar {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--brick), var(--gold), var(--sage));
+      transition: width var(--speed);
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(360px, .9fr);
+      gap: 20px;
+      align-items: start;
+      padding-top: 22px;
+    }
+
+    .panel {
+      background: rgba(255, 250, 240, .82);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(235, 227, 211, .55);
+    }
+
+    .panel-title {
+      margin: 0;
+      font-size: 1.15rem;
+      line-height: 1.2;
+    }
+
+    .step-tag {
+      flex: 0 0 auto;
+      color: var(--blue);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: .76rem;
+      font-weight: 800;
+    }
+
+    .panel-body {
+      padding: 18px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      color: var(--charcoal);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: .78rem;
+      font-weight: 800;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: rgba(255, 252, 246, .92);
+      color: var(--ink);
+      outline: none;
+      transition: border-color var(--speed), box-shadow var(--speed), background var(--speed);
+    }
+
+    input,
+    select {
+      min-height: 44px;
+      padding: 0 12px;
+    }
+
+    textarea {
+      min-height: 94px;
+      resize: vertical;
+      padding: 11px 12px;
+      line-height: 1.55;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(46, 98, 117, .16);
+      background: var(--white);
+    }
+
+    .phase-stack {
+      display: grid;
+      gap: 18px;
+    }
+
+    .phase {
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 18px;
+    }
+
+    .phase:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .phase-top {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .phase h2 {
+      margin: 0;
+      font-size: 1.05rem;
+    }
+
+    .minute {
+      color: var(--brick);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: .76rem;
+      font-weight: 800;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 8px 11px;
+      background: rgba(255, 252, 246, .72);
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: .76rem;
+      font-weight: 800;
+      transition: background var(--speed), color var(--speed), border-color var(--speed);
+    }
+
+    .chip.active {
+      border-color: var(--sage);
+      background: var(--sage);
+      color: var(--white);
+    }
+
+    .observation-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .observation {
+      display: grid;
+      grid-template-columns: minmax(110px, .3fr) minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: start;
+    }
+
+    .icon-button {
+      width: 44px;
+      height: 44px;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      background: var(--white);
+      color: var(--brick);
+      font-size: 1.2rem;
+      transition: transform var(--speed), border-color var(--speed), background var(--speed);
+    }
+
+    .icon-button:hover {
+      transform: translateY(-1px);
+      border-color: var(--brick);
+      background: #fff1e8;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .toolbar button,
+    .copy-btn,
+    .small-btn {
+      padding: 0 15px;
+      color: var(--ink);
+      background: var(--white);
+    }
+
+    .toolbar .primary,
+    .copy-btn.primary {
+      color: var(--white);
+      background: var(--brick);
+      border-color: var(--brick);
+    }
+
+    .toolbar .primary:hover,
+    .copy-btn.primary:hover {
+      background: #8f3e2d;
+    }
+
+    .output {
+      position: sticky;
+      top: 16px;
+    }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .tab {
+      min-height: 46px;
+      border: 0;
+      border-right: 1px solid var(--line);
+      background: rgba(235, 227, 211, .45);
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: .76rem;
+      font-weight: 800;
+    }
+
+    .tab:last-child {
+      border-right: 0;
+    }
+
+    .tab.active {
+      background: var(--white);
+      color: var(--ink);
+      box-shadow: inset 0 -3px 0 var(--brick);
+    }
+
+    .output-page {
+      display: none;
+      padding: 18px;
+    }
+
+    .output-page.active {
+      display: grid;
+      gap: 14px;
+    }
+
+    .result-box {
+      min-height: 170px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: rgba(255, 252, 246, .9);
+      line-height: 1.7;
+      white-space: pre-wrap;
+    }
+
+    .suggestions {
+      display: grid;
+      gap: 10px;
+    }
+
+    .concept-card,
+    .suggestion {
+      padding: 12px;
+      border-left: 4px solid var(--blue);
+      background: rgba(46, 98, 117, .08);
+      line-height: 1.55;
+    }
+
+    .concept-card {
+      border-left-color: var(--gold);
+      background: rgba(184, 135, 58, .12);
+    }
+
+    .concept-name {
+      display: block;
+      margin-bottom: 4px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: .76rem;
+      font-weight: 800;
+      color: var(--brick);
+    }
+
+    .writing-board {
+      min-height: 250px;
+    }
+
+    .museum-strip {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 8px;
+      margin-top: 18px;
+    }
+
+    .room {
+      min-height: 42px;
+      border: 1px solid var(--line);
+      background: rgba(255, 250, 240, .72);
+      position: relative;
+    }
+
+    .room:nth-child(2) {
+      background: rgba(170, 75, 53, .13);
+    }
+
+    .room:nth-child(3) {
+      background: rgba(87, 112, 100, .18);
+    }
+
+    .room:nth-child(5) {
+      background: rgba(184, 135, 58, .16);
+    }
+
+    .room::after {
+      content: "";
+      position: absolute;
+      inset: 11px;
+      border-top: 2px solid rgba(32, 32, 29, .42);
+    }
+
+    .status {
+      min-height: 20px;
+      color: var(--sage);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: .76rem;
+      font-weight: 800;
+    }
+
+    .script-warning {
+      width: min(1240px, calc(100% - 32px));
+      margin: 16px auto 0;
+      padding: 13px 14px;
+      border-left: 4px solid var(--brick);
+      background: rgba(170, 75, 53, .12);
+      color: var(--ink);
+      line-height: 1.6;
+    }
+
+    .install-hint {
+      display: none;
+      position: sticky;
+      top: 8px;
+      z-index: 20;
+      width: min(720px, calc(100% - 20px));
+      margin: 8px auto 0;
+      padding: 11px 44px 11px 13px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--charcoal);
+      color: var(--white);
+      box-shadow: var(--shadow);
+      font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: .88rem;
+      line-height: 1.5;
+    }
+
+    .install-hint.show {
+      display: block;
+    }
+
+    .install-hint button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 32px;
+      height: 32px;
+      border: 1px solid rgba(255,255,255,.45);
+      border-radius: 50%;
+      background: transparent;
+      color: var(--white);
+      font-size: 1.1rem;
+    }
+
+    @media (max-width: 980px) {
+      .masthead,
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+
+      .timer {
+        min-width: 0;
+      }
+
+      .output {
+        position: static;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .shell {
+        width: min(100% - 20px, 1240px);
+        padding-top: 12px;
+      }
+
+      .masthead {
+        padding-top: 8px;
+      }
+
+      .grid,
+      .observation {
+        grid-template-columns: 1fr;
+      }
+
+      .icon-button {
+        width: 100%;
+        border-radius: 999px;
+      }
+
+      .panel-head,
+      .phase-top {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .tabs {
+        grid-template-columns: 1fr;
+      }
+
+      .tab {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .museum-strip {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <noscript>
+    <div class="script-warning">
+      這個頁面目前只是被預覽，按鈕功能沒有執行。請在 iPhone 的「檔案」App 長按 start.html，改用 Safari 開啟，或使用最新版離線包重新打開。
+    </div>
+  </noscript>
+  <div class="install-hint" id="installHint">
+    第一次使用：Safari 分享 → 加入主畫面。完成後可直接點圖示並離線使用。
+    <button type="button" id="dismissInstall" aria-label="關閉提示">×</button>
+  </div>
+  <main class="shell">
+    <header class="masthead">
+      <div class="identity">
+        <p class="kicker">Museum Field Desk</p>
+        <h1>展後分析台</h1>
+        <p class="subline">快速回收體驗，提煉策展觀察，整理成可延伸的文章素材。</p>
+        <nav class="quick-links" aria-label="工具連結">
+          <a class="quick-link" href="./guide.html">手機說明</a>
+        </nav>
+      </div>
+      <section class="timer" aria-label="計時器">
+        <span class="timer-time" id="timerText">00:00</span>
+        <div class="timer-row">
+          <button type="button" data-minutes="15">15</button>
+          <button type="button" data-minutes="30">30</button>
+          <button type="button" id="resetTimer">歸零</button>
+        </div>
+      </section>
+    </header>
+
+    <section class="progress-wrap" aria-label="進度">
+      <div class="progress-meta">
+        <span id="progressLabel">0 / 14</span>
+        <span id="saveStatus">草稿待輸入</span>
+      </div>
+      <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+    </section>
+
+    <div class="museum-strip" aria-hidden="true">
+      <div class="room"></div>
+      <div class="room"></div>
+      <div class="room"></div>
+      <div class="room"></div>
+      <div class="room"></div>
+      <div class="room"></div>
+    </div>
+
+    <section class="workspace">
+      <div class="panel">
+        <div class="panel-head">
+          <h2 class="panel-title">看完後留下來的東西</h2>
+          <span class="step-tag">FIELD NOTES</span>
+        </div>
+        <div class="panel-body phase-stack">
+          <section class="phase">
+            <div class="phase-top">
+              <h2>1. 快速回收體驗</h2>
+              <span class="minute">5-8 分鐘</span>
+            </div>
+            <div class="grid">
+              <div class="field">
+                <label for="exhibitionName">展覽</label>
+                <input id="exhibitionName" data-store placeholder="例：未完成的房間">
+              </div>
+              <div class="field">
+                <label for="venue">地點</label>
+                <input id="venue" data-store placeholder="例：市立美術館">
+              </div>
+              <div class="field">
+                <label for="visitDate">日期</label>
+                <input id="visitDate" data-store type="date">
+              </div>
+              <div class="field">
+                <label for="firstFeeling">第一個感覺</label>
+                <select id="firstFeeling" data-store>
+                  <option value="">選一個</option>
+                  <option>被拉進去</option>
+                  <option>距離感強</option>
+                  <option>資訊太滿</option>
+                  <option>節奏順</option>
+                  <option>有疑問</option>
+                  <option>比預期安靜</option>
+                </select>
+              </div>
+              <div class="field full">
+                <label for="threeImages">三個畫面</label>
+                <textarea id="threeImages" data-store placeholder="不用完整句。寫下你現在還記得的三個畫面、物件、聲音、文字或動線。"></textarea>
+              </div>
+              <div class="field full">
+                <label for="bodyMemory">身體記憶</label>
+                <textarea id="bodyMemory" data-store placeholder="你在哪裡停下來、想退後、想靠近、想跳過、想拍照、想坐下？"></textarea>
+              </div>
+            </div>
+          </section>
+
+          <section class="phase">
+            <div class="phase-top">
+              <h2>2. 提煉觀察</h2>
+              <span class="minute">8-12 分鐘</span>
+            </div>
+            <div class="grid">
+              <div class="field">
+                <label for="route">觀看路徑</label>
+                <select id="route" data-store>
+                  <option value="">選一個</option>
+                  <option>線性推進</option>
+                  <option>自由漫遊</option>
+                  <option>核心展件牽引</option>
+                  <option>文字先行</option>
+                  <option>空間先行</option>
+                  <option>情緒先行</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="viewerRole">觀眾角色</label>
+                <select id="viewerRole" data-store>
+                  <option value="">選一個</option>
+                  <option>被導覽的人</option>
+                  <option>共同解謎的人</option>
+                  <option>旁觀者</option>
+                  <option>參與者</option>
+                  <option>見證者</option>
+                  <option>消費者</option>
+                </select>
+              </div>
+              <div class="field full">
+                <label>策展切入點</label>
+                <div class="chips" id="conceptChips">
+                  <button type="button" class="chip" data-concept="視線導引">視線導引</button>
+                  <button type="button" class="chip" data-concept="展件節奏">展件節奏</button>
+                  <button type="button" class="chip" data-concept="敘事弧線">敘事弧線</button>
+                  <button type="button" class="chip" data-concept="空間門檻">空間門檻</button>
+                  <button type="button" class="chip" data-concept="文本密度">文本密度</button>
+                  <button type="button" class="chip" data-concept="觀眾角色">觀眾角色</button>
+                  <button type="button" class="chip" data-concept="氛圍工程">氛圍工程</button>
+                  <button type="button" class="chip" data-concept="公共性">公共性</button>
+                </div>
+              </div>
+              <div class="field full">
+                <label for="turningPoint">最關鍵的轉折</label>
+                <textarea id="turningPoint" data-store placeholder="哪一刻你開始理解、失去耐心、被說服，或發現展覽真正想讓你做什麼？"></textarea>
+              </div>
+              <div class="field full">
+                <label for="friction">不順或卡住的地方</label>
+                <textarea id="friction" data-store placeholder="可能是動線、文字、光線、展件安排、互動設計、觀眾管理，也可能是你的期待落差。"></textarea>
+              </div>
+            </div>
+          </section>
+
+          <section class="phase">
+            <div class="phase-top">
+              <h2>3. 產出文章素材</h2>
+              <span class="minute">7-10 分鐘</span>
+            </div>
+            <div class="grid">
+              <div class="field full">
+                <label for="oneSentence">一句話判斷</label>
+                <textarea id="oneSentence" data-store placeholder="例：這個展覽最有效的地方，不在於展示了什麼，而是讓觀眾用自己的步速感覺到某種失序。"></textarea>
+              </div>
+              <div class="field full">
+                <label for="audienceTakeaway">想帶走的問題</label>
+                <textarea id="audienceTakeaway" data-store placeholder="看完之後，你想追問策展、博物館、作品、觀眾或城市的哪個問題？"></textarea>
+              </div>
+              <div class="field full">
+                <label for="rawNotes">補充碎片</label>
+                <textarea id="rawNotes" data-store placeholder="任何還沒放進前面欄位的句子、作品名、人名、展牆文字、朋友反應。"></textarea>
+              </div>
+            </div>
+            <div class="observation-list" id="observationList" aria-label="觀察句"></div>
+            <div class="toolbar">
+              <button type="button" class="primary" id="generateBtn">生成素材</button>
+              <button type="button" id="addObservationBtn">新增觀察句</button>
+              <button type="button" id="clearBtn">清空</button>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <aside class="panel output" aria-label="文章素材">
+        <div class="tabs">
+          <button type="button" class="tab active" data-tab="digest">提煉</button>
+          <button type="button" class="tab" data-tab="draft">短文</button>
+          <button type="button" class="tab" data-tab="prompts">延伸</button>
+        </div>
+        <section class="output-page active" id="digest">
+          <div class="status" id="digestStatus">尚未生成</div>
+          <div class="result-box" id="digestBox"></div>
+          <button type="button" class="copy-btn primary" data-copy="digestBox">複製提煉</button>
+        </section>
+        <section class="output-page" id="draft">
+          <textarea class="writing-board" id="draftBox" data-store placeholder="按下生成素材後，這裡會出現可直接修改的短文草稿。"></textarea>
+          <div class="toolbar">
+            <button type="button" class="copy-btn primary" data-copy="draftBox">複製短文</button>
+            <button type="button" class="small-btn" id="downloadBtn">下載文字檔</button>
+          </div>
+        </section>
+        <section class="output-page" id="prompts">
+          <div class="suggestions" id="learningBox">
+            <div class="suggestions" id="conceptBox"></div>
+            <div class="suggestions" id="promptBox"></div>
+          </div>
+          <button type="button" class="copy-btn primary" data-copy="learningBox">複製延伸題</button>
+        </section>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const STORAGE_KEY = "museum-field-desk-v1";
+    const fields = [...document.querySelectorAll("[data-store]")];
+    const requiredIds = [
+      "exhibitionName", "venue", "visitDate", "firstFeeling", "threeImages",
+      "bodyMemory", "route", "viewerRole", "turningPoint", "friction",
+      "oneSentence", "audienceTakeaway"
+    ];
+    const state = {
+      concepts: [],
+      timer: { start: null, duration: 0, elapsed: 0 },
+      observations: [
+        { lens: "展件", text: "" },
+        { lens: "空間", text: "" },
+        { lens: "文字", text: "" }
+      ]
+    };
+
+    const els = {
+      timerText: document.querySelector("#timerText"),
+      progressLabel: document.querySelector("#progressLabel"),
+      progressBar: document.querySelector("#progressBar"),
+      saveStatus: document.querySelector("#saveStatus"),
+      observationList: document.querySelector("#observationList"),
+      digestBox: document.querySelector("#digestBox"),
+      draftBox: document.querySelector("#draftBox"),
+      promptBox: document.querySelector("#promptBox"),
+      conceptBox: document.querySelector("#conceptBox"),
+      digestStatus: document.querySelector("#digestStatus")
+    };
+
+    let canStoreDraft = true;
+
+    const conceptNotes = {
+      "視線導引": {
+        note: "看展不是只靠作品本身，光線、牆面、開口與高度都會暗中決定你先看見什麼。",
+        ask: "你第一眼被帶到哪裡？那是作品需要，還是空間安排？"
+      },
+      "展件節奏": {
+        note: "展件排列會形成速度：密集讓人掃讀，留白讓人停下，重複會建立語氣。",
+        ask: "哪一段最像加速、暫停或轉場？"
+      },
+      "敘事弧線": {
+        note: "展覽可以像文章一樣有開場、鋪陳、轉折與收束，也可以故意打散。",
+        ask: "你是在哪一刻知道展覽真正的問題？"
+      },
+      "空間門檻": {
+        note: "入口、轉角、暗房、簾幕與樓梯會改變觀眾的心理狀態。",
+        ask: "哪一個空間變化讓你切換了觀看方式？"
+      },
+      "文本密度": {
+        note: "展牆文字不只是說明，它會分配權威、速度與觀眾的自由度。",
+        ask: "文字是在幫你看，還是在替你下結論？"
+      },
+      "觀眾角色": {
+        note: "策展會安排觀眾的位置：旁觀、參與、見證、消費、解謎或被教育。",
+        ask: "這個展覽期待你成為哪一種觀眾？"
+      },
+      "氛圍工程": {
+        note: "聲音、溫度、材質、色溫與距離會把知識變成感受。",
+        ask: "如果拿掉氛圍，展覽的論點還站得住嗎？"
+      },
+      "公共性": {
+        note: "博物館不只是保存與展示，也在決定哪些故事能被公開討論。",
+        ask: "這個展覽把誰帶進公共視野，又讓誰仍然缺席？"
+      }
+    };
+
+    function today() {
+      const parts = new Intl.DateTimeFormat("en", {
+        timeZone: "Asia/Taipei",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+      }).formatToParts(new Date());
+      const value = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+      return `${value.year}-${value.month}-${value.day}`;
+    }
+
+    function readDraft() {
+      if (!canStoreDraft) return null;
+      try {
+        return localStorage.getItem(STORAGE_KEY);
+      } catch {
+        canStoreDraft = false;
+        return null;
+      }
+    }
+
+    function writeDraft(data) {
+      if (!canStoreDraft) return false;
+      try {
+        localStorage.setItem(STORAGE_KEY, data);
+        return true;
+      } catch {
+        canStoreDraft = false;
+        return false;
+      }
+    }
+
+    function removeDraft() {
+      if (!canStoreDraft) return;
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch {
+        canStoreDraft = false;
+      }
+    }
+
+    function load() {
+      const raw = readDraft();
+      if (!raw) {
+        document.querySelector("#visitDate").value = today();
+        renderObservations();
+        updateProgress();
+        if (!canStoreDraft) els.saveStatus.textContent = "離線暫存受限";
+        return;
+      }
+      try {
+        const saved = JSON.parse(raw);
+        fields.forEach((field) => {
+          if (saved.values && saved.values[field.id] !== undefined) field.value = saved.values[field.id];
+        });
+        state.concepts = saved.concepts || [];
+        state.observations = saved.observations || state.observations;
+        state.timer = saved.timer || state.timer;
+      } catch {
+        document.querySelector("#visitDate").value = today();
+      }
+      syncChips();
+      renderObservations();
+      updateProgress();
+    }
+
+    function save() {
+      const values = {};
+      fields.forEach((field) => values[field.id] = field.value);
+      const stored = writeDraft(JSON.stringify({
+        values,
+        concepts: state.concepts,
+        observations: state.observations,
+        timer: state.timer
+      }));
+      if (!stored) {
+        els.saveStatus.textContent = "離線暫存受限";
+        return;
+      }
+      els.saveStatus.textContent = "已保存";
+      window.clearTimeout(save._timer);
+      save._timer = window.setTimeout(() => els.saveStatus.textContent = "草稿已同步", 1200);
+    }
+
+    function updateProgress() {
+      const filled = requiredIds.filter((id) => document.querySelector("#" + id).value.trim()).length;
+      const observationFilled = state.observations.filter((item) => item.text.trim()).length;
+      const conceptFilled = state.concepts.length ? 1 : 0;
+      const total = requiredIds.length + 2;
+      const done = filled + Math.min(observationFilled, 1) + conceptFilled;
+      const percent = Math.round((done / total) * 100);
+      els.progressLabel.textContent = `${done} / ${total}`;
+      els.progressBar.style.width = `${percent}%`;
+    }
+
+    function syncChips() {
+      document.querySelectorAll(".chip").forEach((chip) => {
+        chip.classList.toggle("active", state.concepts.includes(chip.dataset.concept));
+      });
+    }
+
+    function renderObservations() {
+      els.observationList.innerHTML = "";
+      state.observations.forEach((item, index) => {
+        const row = document.createElement("div");
+        row.className = "observation";
+        row.innerHTML = `
+          <select aria-label="觀察面向">
+            <option ${item.lens === "展件" ? "selected" : ""}>展件</option>
+            <option ${item.lens === "空間" ? "selected" : ""}>空間</option>
+            <option ${item.lens === "文字" ? "selected" : ""}>文字</option>
+            <option ${item.lens === "動線" ? "selected" : ""}>動線</option>
+            <option ${item.lens === "觀眾" ? "selected" : ""}>觀眾</option>
+            <option ${item.lens === "聲音" ? "selected" : ""}>聲音</option>
+          </select>
+          <input aria-label="觀察句" placeholder="例：展覽把最安靜的作品放在轉角，讓觀眾自然放慢。" value="${escapeHtml(item.text)}">
+          <button type="button" class="icon-button" aria-label="刪除觀察">×</button>
+        `;
+        const [select, input, button] = row.children;
+        select.addEventListener("change", () => {
+          state.observations[index].lens = select.value;
+          save();
+          updateProgress();
+        });
+        input.addEventListener("input", () => {
+          state.observations[index].text = input.value;
+          save();
+          updateProgress();
+        });
+        button.addEventListener("click", () => {
+          state.observations.splice(index, 1);
+          renderObservations();
+          save();
+          updateProgress();
+        });
+        els.observationList.appendChild(row);
+      });
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        "\"": "&quot;",
+        "'": "&#039;"
+      }[char]));
+    }
+
+    function val(id) {
+      return document.querySelector("#" + id).value.trim();
+    }
+
+    function splitLines(text) {
+      return text.split(/\n|、|，|,/).map((item) => item.trim()).filter(Boolean);
+    }
+
+    function generate() {
+      const name = val("exhibitionName") || "這個展覽";
+      const venue = val("venue") || "展場";
+      const feeling = val("firstFeeling") || "留下明確感覺";
+      const route = val("route") || "觀看路徑";
+      const role = val("viewerRole") || "觀眾";
+      const concepts = state.concepts.length ? state.concepts.join("、") : "展件節奏、觀眾角色";
+      const images = splitLines(val("threeImages")).slice(0, 3);
+      const observations = state.observations.filter((item) => item.text.trim());
+      const thesis = val("oneSentence") || `${name}值得記下的地方，是它如何透過${route}讓${role}重新意識到自己正在觀看。`;
+
+      els.digestBox.textContent = [
+        `展覽：${name}`,
+        `地點：${venue}`,
+        `第一感覺：${feeling}`,
+        `切入點：${concepts}`,
+        "",
+        `一句話：${thesis}`,
+        "",
+        "可用畫面：",
+        ...(images.length ? images.map((item) => `- ${item}`) : ["- 尚未填寫"]),
+        "",
+        "觀察句：",
+        ...(observations.length ? observations.map((item) => `- [${item.lens}] ${item.text}`) : ["- 尚未填寫"]),
+        "",
+        `問題意識：${val("audienceTakeaway") || "這個展覽如何改變觀眾與作品的距離？"}`
+      ].join("\n");
+
+      els.draftBox.value = [
+        `${name}讓我先記住的不是完整論點，而是幾個殘留在身上的現場片段。${images[0] ? `其中最清楚的是「${images[0]}」。` : ""}`,
+        "",
+        `這個展覽的觀看經驗比較接近「${route}」。觀眾在其中像是「${role}」，不是單純接收資訊，而是在空間、文字與展件之間判斷自己應該靠近、停留或離開。${val("bodyMemory")}`,
+        "",
+        `如果用策展角度看，我會從「${concepts}」切入。${val("turningPoint") || "真正的轉折出現在我意識到展覽不是只安排作品，也安排了觀看的速度。"} ${observations[0] ? observations[0].text : ""}`,
+        "",
+        `不過，這個經驗也有卡住的地方。${val("friction") || "有些段落讓我還不能判斷是刻意製造距離，還是資訊與動線沒有銜接好。"} 這反而成為後續可以追問的地方：${val("audienceTakeaway") || "展覽如何讓觀眾在不被過度解釋的情況下，仍然願意繼續看下去？"}`,
+        "",
+        `暫時的判斷是：${thesis}`
+      ].join("\n");
+
+      els.promptBox.innerHTML = "";
+      els.conceptBox.innerHTML = "";
+      const selectedConcepts = state.concepts.length ? state.concepts : ["展件節奏", "觀眾角色"];
+      selectedConcepts.forEach((concept) => {
+        const data = conceptNotes[concept];
+        if (!data) return;
+        const item = document.createElement("div");
+        item.className = "concept-card";
+        item.innerHTML = `<span class="concept-name">${concept}</span>${data.note}<br>${data.ask}`;
+        els.conceptBox.appendChild(item);
+      });
+      [
+        `把「${concepts.split("、")[0]}」當主題，回頭查一個策展或博物館案例。`,
+        `比較你在「${name}」裡的${role}位置，和另一個展覽的觀眾位置有何不同。`,
+        `把最不順的地方改寫成一個設計問題：如果由你重排，會先動哪一段？`,
+        `找出一段展牆文字，判斷它是在解釋作品、建立情境，還是控制觀看順序。`
+      ].forEach((text) => {
+        const item = document.createElement("div");
+        item.className = "suggestion";
+        item.textContent = text;
+        els.promptBox.appendChild(item);
+      });
+      els.digestStatus.textContent = "已生成";
+      document.querySelector('[data-tab="digest"]').click();
+      save();
+    }
+
+    function copyFrom(id) {
+      const node = document.querySelector("#" + id);
+      const text = node.tagName === "TEXTAREA" ? node.value : node.textContent;
+      const value = text.trim();
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(value).then(() => {
+          els.saveStatus.textContent = "已複製";
+        }).catch(() => fallbackCopy(value));
+        return;
+      }
+      fallbackCopy(value);
+    }
+
+    function fallbackCopy(text) {
+      const helper = document.createElement("textarea");
+      helper.value = text;
+      helper.setAttribute("readonly", "");
+      helper.style.position = "fixed";
+      helper.style.left = "-9999px";
+      document.body.appendChild(helper);
+      helper.select();
+      let copied = false;
+      try {
+        copied = document.execCommand("copy");
+      } catch {
+        copied = false;
+      }
+      document.body.removeChild(helper);
+      if (text && copied) {
+        els.saveStatus.textContent = "已複製";
+      } else if (text) {
+        els.saveStatus.textContent = "請手動全選複製";
+      }
+    }
+
+    function downloadDraft() {
+      const name = val("exhibitionName") || "展後分析";
+      const blob = new Blob([els.draftBox.value], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${name}-展後短文.txt`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function updateTimer() {
+      const now = Date.now();
+      const elapsed = state.timer.start ? Math.floor((now - state.timer.start) / 1000) : state.timer.elapsed;
+      const remaining = state.timer.duration ? Math.max(state.timer.duration - elapsed, 0) : elapsed;
+      const minutes = String(Math.floor(remaining / 60)).padStart(2, "0");
+      const seconds = String(remaining % 60).padStart(2, "0");
+      els.timerText.textContent = `${minutes}:${seconds}`;
+      if (state.timer.start && remaining <= 0 && state.timer.duration) {
+        state.timer.start = null;
+        state.timer.elapsed = 0;
+        els.saveStatus.textContent = "時間到";
+        save();
+      }
+      requestAnimationFrame(updateTimer);
+    }
+
+    fields.forEach((field) => field.addEventListener("input", () => {
+      save();
+      updateProgress();
+    }));
+
+    document.querySelectorAll(".chip").forEach((chip) => {
+      chip.addEventListener("click", () => {
+        const concept = chip.dataset.concept;
+        state.concepts = state.concepts.includes(concept)
+          ? state.concepts.filter((item) => item !== concept)
+          : [...state.concepts, concept];
+        syncChips();
+        save();
+        updateProgress();
+      });
+    });
+
+    document.querySelector("#addObservationBtn").addEventListener("click", () => {
+      state.observations.push({ lens: "展件", text: "" });
+      renderObservations();
+      save();
+    });
+
+    document.querySelector("#generateBtn").addEventListener("click", generate);
+    document.querySelector("#downloadBtn").addEventListener("click", downloadDraft);
+
+    document.querySelector("#clearBtn").addEventListener("click", () => {
+      if (!confirm("要清空目前草稿嗎？")) return;
+      removeDraft();
+      fields.forEach((field) => field.value = "");
+      document.querySelector("#visitDate").value = today();
+      state.concepts = [];
+      state.observations = [
+        { lens: "展件", text: "" },
+        { lens: "空間", text: "" },
+        { lens: "文字", text: "" }
+      ];
+      syncChips();
+      renderObservations();
+      updateProgress();
+      els.digestBox.textContent = "";
+      els.draftBox.value = "";
+      els.promptBox.innerHTML = "";
+      els.digestStatus.textContent = "尚未生成";
+      save();
+    });
+
+    document.querySelectorAll("[data-copy]").forEach((button) => {
+      button.addEventListener("click", () => copyFrom(button.dataset.copy));
+    });
+
+    document.querySelectorAll(".tab").forEach((button) => {
+      button.addEventListener("click", () => {
+        document.querySelectorAll(".tab").forEach((tab) => tab.classList.remove("active"));
+        document.querySelectorAll(".output-page").forEach((page) => page.classList.remove("active"));
+        button.classList.add("active");
+        document.querySelector("#" + button.dataset.tab).classList.add("active");
+      });
+    });
+
+    document.querySelectorAll("[data-minutes]").forEach((button) => {
+      button.addEventListener("click", () => {
+        state.timer = {
+          start: Date.now(),
+          duration: Number(button.dataset.minutes) * 60,
+          elapsed: 0
+        };
+        save();
+      });
+    });
+
+    document.querySelector("#resetTimer").addEventListener("click", () => {
+      state.timer = { start: null, duration: 0, elapsed: 0 };
+      save();
+    });
+
+    const isStandalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+    const installDismissed = sessionStorage.getItem("install-hint-dismissed") === "yes";
+    if (!isStandalone && !installDismissed) {
+      document.querySelector("#installHint").classList.add("show");
+    }
+    document.querySelector("#dismissInstall").addEventListener("click", () => {
+      document.querySelector("#installHint").classList.remove("show");
+      sessionStorage.setItem("install-hint-dismissed", "yes");
+    });
+
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js"));
+    }
+
+    load();
+    updateTimer();
+  </script>
+</body>
+</html>
