@@ -11,18 +11,12 @@
 
 安裝並成功開啟一次後，核心功能可離線使用。
 
-## 部署需求
+## 公開網址
 
-- 必須使用 HTTPS。
-- 部署時保留這個資料夾內所有檔案與相對位置。
-- 首頁必須是 `index.html`。
-- 儲存庫名稱建議使用 `museum-field-desk`。
-- 第一次需要在 GitHub Pages 設定中選擇「GitHub Actions」作為來源。
-- 完成後，每次推送 `main` 分支都會自動更新網站。
+- 分析台：<https://keroro1234558.github.io/museum-field-desk/>
+- 手機說明：<https://keroro1234558.github.io/museum-field-desk/guide.html>
 
-## 預定網址
-
-`https://keroro1234558.github.io/museum-field-desk/`
+網站使用 GitHub Pages，直接發布 `main` 分支根目錄。每次推送 `main` 後會自動更新。
 
 ## 驗證項目
 
